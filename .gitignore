@@ -1,0 +1,8 @@
+#this is a gitignore file for unity projects, remove Library folder
+
+/Library
+/Logs
+/obj
+/UserSettings
+/Temp
+/MemoryCaptures

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Board
+  - MovePlate
+  - MoveGenerator
+  - KnightButton
+  - BishopButton
+  - QueenButton
+  - RookButton
+  - GamePlayUIParent
+  - CheckText
+  - BoardBorder
+  - GamePlayPiecesParent
+  - CanvasGameOver
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Top UI
+  - Water
+  - UI
+  - Background
+  - ChessPiece
+  - Panel
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Board
+    uniqueID: 3575940817
+    locked: 0
