@@ -85,7 +85,7 @@ public class Piece : MonoBehaviour
     {
         isDragging = false;
         bool isDroppable = false;
-        Debug.Log("mouse up");
+        //Debug.Log("mouse up");
         foreach(MovePlate mp in moveplateRefs)
         {
             if(Vector2.Distance(mp.transform.position, this.transform.position) < (1.138f / 2))

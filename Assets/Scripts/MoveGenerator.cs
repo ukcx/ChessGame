@@ -126,7 +126,7 @@ public class MoveGenerator : MonoBehaviour
         Queue<uint> updatesQueue = new Queue<uint>(currentPlayer == Piece.PieceColor.White ? whiteUpdatesQueue : blackUpdatesQueue);
         Queue<uint> updatesQueue2 = new Queue<uint>();
 
-        ////Debug.Log("currentPlayer: " + currentPlayer);
+        //////Debug.Log("currentPlayer: " + currentPlayer);
         while (updatesQueue.Count > 0)
         {
             uint id = updatesQueue.Dequeue();
@@ -353,13 +353,13 @@ public class MoveGenerator : MonoBehaviour
             foreach (Move move in moves)
             {
                 Point pinnerPos = idToPos[pin.Key];
-                ////Debug.Log("pinner pos: " + pinnerPos.X + ", " + pinnerPos.Y);
+                //////Debug.Log("pinner pos: " + pinnerPos.X + ", " + pinnerPos.Y);
                 if ((move.To.X == move.From.X && pinnerPos.X == move.To.X) ||
                     (move.To.Y == move.From.Y && pinnerPos.Y == move.To.Y) ||
                     (move.To == pinnerPos))
                 {
                     newMoves.Add(move);
-                    ////Debug.Log("Aligned!!");
+                    //////Debug.Log("Aligned!!");
                 }
                 else if (move.To.X == move.From.X || move.To.Y == move.From.Y || move.To.X == pinnerPos.X || pinnerPos.Y == move.To.Y) { }
                 else
@@ -369,7 +369,7 @@ public class MoveGenerator : MonoBehaviour
 
                     if (ratio1 == ratio2)
                     {
-                        ////Debug.Log("Aligned In both directions!!");
+                        //////Debug.Log("Aligned In both directions!!");
                         newMoves.Add(move);
                     }
                 }
@@ -410,8 +410,8 @@ public class MoveGenerator : MonoBehaviour
         else movesAll[kingId] = newMoves;
 
         //int end = movesAll.ContainsKey(kingId) ? newMoves.Count : 0;
-        ////Debug.Log(currentPlayer + " king move count: " + end);
-        ////Debug.Log(currentPlayer + " king move pos: " + kingPos.X + ", " + kingPos.Y);
+        //////Debug.Log(currentPlayer + " king move count: " + end);
+        //////Debug.Log(currentPlayer + " king move pos: " + kingPos.X + ", " + kingPos.Y);
     }
 
     //private Check IsOpponentKingChecked(Move move)
@@ -581,10 +581,10 @@ public class MoveGenerator : MonoBehaviour
             if(potentialPin == true)
             {
                 pins[board[p.X, p.Y].GetComponent<Piece>().id] = potentialPinId;
-                ////Debug.Log("pinner id: " + board[p.X, p.Y].GetComponent<Piece>().id);
-                ////Debug.Log("pinned id: " + potentialPinId);
-                ////Debug.Log("pinned again");
-                ////Debug.Log("line move dir: " + xIncrement + ", " + yIncrement);
+                //////Debug.Log("pinner id: " + board[p.X, p.Y].GetComponent<Piece>().id);
+                //////Debug.Log("pinned id: " + potentialPinId);
+                //////Debug.Log("pinned again");
+                //////Debug.Log("line move dir: " + xIncrement + ", " + yIncrement);
             }
         }
     }
@@ -963,7 +963,7 @@ public class MoveGenerator : MonoBehaviour
             moveupdatePositionsOfPieces[attackedId] = new List<Point>();
             if (pins.ContainsKey(attackedId))
             {
-                ////Debug.Log("pin removed");
+                //////Debug.Log("pin removed");
                 pins.Remove(attackedId);
             }
         }
@@ -1027,14 +1027,14 @@ public class MoveGenerator : MonoBehaviour
                     }
                 }
                 pins.Add(pinningPieceId, board[move.To.X, move.To.Y].GetComponent<Piece>().id);
-                ////Debug.Log("pinned!!");  
+                //////Debug.Log("pinned!!");  
             }
         }
         int checkCount = 0;
 
         foreach (MoveUpdater mu in moveBoard[idToPos[kingIdOfOpponent].X, idToPos[kingIdOfOpponent].Y])
         {
-            ////Debug.Log(mu.id);
+            //////Debug.Log(mu.id);
             if (mu.attackable == true)
             {
                 checkCount++;
@@ -1042,7 +1042,7 @@ public class MoveGenerator : MonoBehaviour
         }
         check = checkCount > 0;
         doublecheck = checkCount > 1;
-        if (doublecheck) { }//Debug.Log("double check"); }
+        if (doublecheck) { }////Debug.Log("double check"); }
     }
 
     public List<uint> GetEnPassants()
@@ -1108,7 +1108,7 @@ public class MoveGenerator : MonoBehaviour
         uint attackingPieceId = 0;
         foreach (MoveUpdater mu in moveBoard[idToPos[kingIdOfPlayer].X, idToPos[kingIdOfPlayer].Y])
         {
-            ////Debug.Log(mu.id);
+            //////Debug.Log(mu.id);
             if (mu.attackable == true)
             {
                 checkCount++;
@@ -1121,12 +1121,12 @@ public class MoveGenerator : MonoBehaviour
         ids = new HashSet<uint>();
         if (check)
         {
-            //Debug.Log("attackingPieceId: " + attackingPieceId);
-            //Debug.Log("here");
+            ////Debug.Log("attackingPieceId: " + attackingPieceId);
+            ////Debug.Log("here");
             List<string> attackPieceNames = new List<string>() { "white_rook", "white_bishop", "white_queen", "black_rook", "black_bishop", "black_queen" };
             if (attackPieceNames.Contains(board[idToPos[attackingPieceId].X, idToPos[attackingPieceId].Y].GetComponent<Piece>().name))
             {
-                //Debug.Log("here2");
+                ////Debug.Log("here2");
                 List<Point> rayOfPoints = new List<Point>();
                 Point start = idToPos[attackingPieceId];
                 Point end = idToPos[kingIdOfPlayer];
@@ -1164,23 +1164,23 @@ public class MoveGenerator : MonoBehaviour
                         yAxis += yInc;
                     }
                 }
-                //Debug.Log("rayOfPoints count: " + rayOfPoints.Count);
+                ////Debug.Log("rayOfPoints count: " + rayOfPoints.Count);
                 foreach(Point point in rayOfPoints)
                 {
                     foreach (MoveUpdater mu in moveBoard[point.X, point.Y])
                     {
                         if (board[idToPos[mu.id].X, idToPos[mu.id].Y].GetComponent<Piece>().player != currentPlayer)
                         {
-                            //Debug.Log("HERE3");
-                            //Debug.Log(mu.id);
+                            ////Debug.Log("HERE3");
+                            ////Debug.Log(mu.id);
                             ids.Add(mu.id);
                         }
-                        //Debug.Log("here4");
+                        ////Debug.Log("here4");
                     }                
                 }
                 foreach (uint id in ids)
                 {
-                    //Debug.Log("here5");
+                    ////Debug.Log("here5");
                     if (id < 16)
                         whiteUpdatesQueue.Enqueue(id);
                     else
@@ -1203,7 +1203,7 @@ public class MoveGenerator : MonoBehaviour
         //{
         //    pins.Remove((uint)pinningPieceId);
         //}
-        ////Debug.Log("pinned!!");
+        //////Debug.Log("pinned!!");
     }
 
     public string GetMoveLogFirstPart(Move move)
@@ -1240,7 +1240,7 @@ public class MoveGenerator : MonoBehaviour
                 fromPosLogX = Char.ToString((char)('a' + move.From.X));
         }
 
-        //Debug.Log("here " + Char.ToString((char)('a' + move.From.X)));
+        ////Debug.Log("here " + Char.ToString((char)('a' + move.From.X)));
         string fromPosLog = fromPosLogX + fromPosLogY;
 
         return logNames[move.MovingPieceName] + fromPosLog + (move.Attack == null ? "" : "x" + logNames[move.Attack.Value.CapturedPieceName]) + GetPieceCoordLogs(move.To) + (move.Promote == null ? "" : "=" + logNames[move.Promote.Value.PromotedTo]);

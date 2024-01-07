@@ -13,14 +13,15 @@ public class AIPlayer : MonoBehaviour
     private GameObject[,] board;
     private List<MoveUpdater>[,] moveBoard;
     private Dictionary<string, float> actionValues;
-    private Dictionary<string, int> pieceValues;
+    private Dictionary<string, float> evaluationCoefficients;
+    private Dictionary<Piece.PieceType, int> pieceValues;
 
     private uint whiteKingId;
     private uint blackKingId;
     private Piece.PieceColor thisPlayer;
     private Piece.PieceColor opponentPlayer;
     private Move bestMove;
-    private Piece.PieceColor playersTurn;
+    private Piece.PieceColor lastPlayedPlayer;
 
     private void Awake()
     {
@@ -29,11 +30,14 @@ public class AIPlayer : MonoBehaviour
         actionValues = new Dictionary<string, float>() { 
             { "checkmate", float.PositiveInfinity },{ "check", 2f }, { "draw", 0.0f }, { "pinned", 0.2f }, { "attackCloseToKing", 0.1f }, { "maxAttackAmount", 16f }
         };
-        pieceValues = new Dictionary<string, int>()
+        evaluationCoefficients = new Dictionary<string, float>() {
+            {"attackPotential", 4f }, {"pieceMobility", .4f}, {"connectedPawns", 3f}, {"kingSafety", 2f}, {"openLine", 2f}, {"pawnChain", .5f}, {"isolatedPawn", -0.2f}
+        };
+        pieceValues = new Dictionary<Piece.PieceType, int>()
         {
-            { "white_pawn", 1 }, { "black_pawn", 1 }, { "white_knight", 3 }, { "black_knight", 3 },
-            { "white_bishop", 3 }, { "black_bishop", 3 }, { "white_rook", 5 }, { "black_rook", 5 },
-            { "white_queen", 9 }, { "black_queen", 9 }
+            { Piece.PieceType.Pawn, 1 }, { Piece.PieceType.Knight, 3 },
+            { Piece.PieceType.Bishop, 3 }, { Piece.PieceType.Rook, 5 },
+            { Piece.PieceType.Queen, 9 }
         };
         whiteKingId = gameSetter.WHITE_KING_ID;
         blackKingId = gameSetter.BLACK_KING_ID;
@@ -64,7 +68,7 @@ public class AIPlayer : MonoBehaviour
         opponentPlayer = thisPlayer == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;
 
         float maxEval = Minimax(depth, float.NegativeInfinity, float.PositiveInfinity, 1);
-        Debug.Log("max eval: " + maxEval);
+        //Debug.Log("max eval: " + maxEval);
 
         gameSetter.moveReady = true;
         gameSetter.AIMove(bestMove);
@@ -74,7 +78,7 @@ public class AIPlayer : MonoBehaviour
     private void PrintMoveLog(Move move)
     {
         string moveLog = move.MovingPieceName + " (" + (char)('a'+move.From.X) + (1 + move.From.Y) + "), (" + (char)('a' + move.To.X) + (1 + move.To.Y) + ")";
-        Debug.Log("move " + moveLog);
+        //Debug.Log("move " + moveLog);
     }
 
     private float Minimax(int depth, float alpha, float beta, int maximizingPlayer)
@@ -82,7 +86,7 @@ public class AIPlayer : MonoBehaviour
         if (depth == 0 || gameSetter.checkMated || gameSetter.drawn)
         {
             float eval = EvaluateBoard();
-            Debug.Log("eval: " + eval);
+            //Debug.Log("eval: " + eval);
             return eval;
         }
 
@@ -90,8 +94,8 @@ public class AIPlayer : MonoBehaviour
         {
             float maxEval = float.NegativeInfinity;
             Dictionary<uint, List<Move>> moves = moveGenerator.GetMoves(thisPlayer);
-            //Debug.Log("Generated moves pos, depth=" + depth);
-            //Debug.Log("Generated move count: " + moves.Count);
+            ////Debug.Log("Generated moves pos, depth=" + depth);
+            ////Debug.Log("Generated move count: " + moves.Count);
             foreach (uint id in moves.Keys)
             {
                 foreach(Move move in moves[id])
@@ -100,7 +104,7 @@ public class AIPlayer : MonoBehaviour
                     //PrintMoveLog(move);
                     float eval = Minimax(depth - 1, alpha, beta, -1);
                     UnMakeMoveAI(move);
-                    Debug.Log(gameSetter.GetBoardLog());
+                    //Debug.Log(gameSetter.GetBoardLog());
                     if (eval > maxEval)
                     {
                         bestMove = move;
@@ -113,16 +117,16 @@ public class AIPlayer : MonoBehaviour
                 if (beta <= alpha)
                     break;
             }
-            //Debug.Log("max eval minimax with depth=" + depth);
-            //Debug.Log("max eval: " + maxEval);
+            ////Debug.Log("max eval minimax with depth=" + depth);
+            ////Debug.Log("max eval: " + maxEval);
             return maxEval;
         }
         else
         {
             float minEval = float.PositiveInfinity;
             Dictionary<uint, List<Move>> moves = moveGenerator.GetMoves(opponentPlayer);
-            //Debug.Log("Generated moves neg, depth=" + depth);
-            //Debug.Log("Generated move count: " + moves.Count);
+            ////Debug.Log("Generated moves neg, depth=" + depth);
+            ////Debug.Log("Generated move count: " + moves.Count);
             foreach (uint id in moves.Keys)
             {
                 foreach (Move move in moves[id])
@@ -139,48 +143,84 @@ public class AIPlayer : MonoBehaviour
                 if (beta <= alpha)
                     break;
             }
-            //Debug.Log("min eval minimax with depth=" + depth);
-            //Debug.Log("min eval: " + minEval);
+            ////Debug.Log("min eval minimax with depth=" + depth);
+            ////Debug.Log("min eval: " + minEval);
             return minEval;
         }
     }
 
     private float EvaluateBoard()
     {
-        playersTurn = gameSetter.GetCurrentPlayer() == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;
+        lastPlayedPlayer = gameSetter.GetCurrentPlayer() == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;
         bool checkMate = gameSetter.checkMated;
         bool drawn = gameSetter.drawn;
 
-        if(playersTurn == thisPlayer && checkMate)
-        {
-            return -1.0f * actionValues["checkmate"];
-        }
-        else if (checkMate)
+        if(lastPlayedPlayer == thisPlayer && checkMate)
         {
             return 1.0f * actionValues["checkmate"];
         }
-
-        if (playersTurn == thisPlayer && drawn)
+        else if (checkMate)
         {
-            return -1.0f * actionValues["draw"];
+            return -1.0f * actionValues["checkmate"];
         }
-        else if (drawn)
+
+        if (lastPlayedPlayer == thisPlayer && drawn)
         {
             return 1.0f * actionValues["draw"];
         }
+        else if (drawn)
+        {
+            return -1.0f * actionValues["draw"];
+        }
 
-        return EvaluateBoardOfOneSide(thisPlayer) - EvaluateBoardOfOneSide(opponentPlayer);
+        return EvaluateBoardForOneSide(thisPlayer) - EvaluateBoardForOneSide(opponentPlayer);
     }
 
-    private float EvaluateBoardOfOneSide(Piece.PieceColor currPlayer)
+    private float EvaluateBoardForOneSide(Piece.PieceColor playerToEvaluate)
     {
         bool check = gameSetter.check;
-        return PiecePointTotal(currPlayer) + AttackingOpportunities(check, currPlayer) + PieceConnectedness(currPlayer) + KingSafety(check, currPlayer);
+        return EvaluateMaterialBalanceOfAPlayer(playerToEvaluate) + EvaluateAttackPotentialOfAPlayer(check, playerToEvaluate) 
+            + EvaluatePieceMobilityOfAPlayer(check, playerToEvaluate) + EvaluatePieceConnectedness(playerToEvaluate) 
+            + EvaluateKingSafety(check, playerToEvaluate) + EvaluatePawnStructure(playerToEvaluate);
     }
 
-    private float AttackingOpportunities(bool check, Piece.PieceColor currPlayer)
+    private float EvaluatePawnStructure(Piece.PieceColor playerToEvaluate)
     {
-        uint lowestIdOpponent = currPlayer == Piece.PieceColor.White ? (uint)16 : (uint)0;
+        uint lowestId = playerToEvaluate == Piece.PieceColor.White ? (uint)0 : (uint)16;
+        uint highestId = lowestId + 16;
+        int chainLength = 0;
+        int isolatedPawnCount = 0;
+
+        for(uint i = lowestId;  i < highestId; i++)
+        {
+            Point pos = idToPos[i];
+            if(pos != new Point(-1, -1))
+            {
+                if (board[pos.X, pos.Y].GetComponent<Piece>().type == Piece.PieceType.Pawn)
+                {
+                    bool isIsolated = true;
+                    List<MoveUpdater> muList = moveBoard[pos.X, pos.Y];
+                    foreach(MoveUpdater mu in muList)
+                    {
+                        Point posOfOtherPiece = idToPos[mu.id];
+                        if (mu.protectable && board[posOfOtherPiece.X, posOfOtherPiece.Y].GetComponent<Piece>().type == Piece.PieceType.Pawn)
+                        {
+                            isIsolated = false;
+                            chainLength++;
+                        }
+                    }
+                    if(isIsolated)
+                        isolatedPawnCount++;
+                }
+            }
+        }
+
+        return chainLength * evaluationCoefficients["pawnChain"] + isolatedPawnCount * evaluationCoefficients["isolatedPawn"];
+    }
+
+    private float EvaluateAttackPotentialOfAPlayer(bool check, Piece.PieceColor playerToEvaluate)
+    {
+        uint lowestIdOpponent = playerToEvaluate == Piece.PieceColor.White ? (uint)16 : (uint)0;
         uint highestIdOpponent = lowestIdOpponent + 16;
         int attackedPieceValues = 0;
         HashSet<uint> attackedPieces = new();
@@ -196,17 +236,61 @@ public class AIPlayer : MonoBehaviour
                 {
                     if (mu.attackable)
                     {
-                        attackedPieceValues += pieceValues[board[pos.X, pos.Y].GetComponent<Piece>().name];
+                        attackedPieceValues += pieceValues[board[pos.X, pos.Y].GetComponent<Piece>().type];
                         attackedPieces.Add(board[pos.X, pos.Y].GetComponent<Piece>().id);
                     }
                 }
             }
         }
 
-        float attackPotential = (attackedPieceValues * attackedPieces.Count) / (16 * TotalPieceValueCount());
+        float attackPotential = (1.0f * CheckNumberOfPassedPawns(playerToEvaluate) + attackedPieceValues * attackedPieces.Count) / (16 * TotalPieceValueCount());
 
-        if (check && currPlayer == playersTurn) return attackPotential;
-        return actionValues["check"] * attackPotential;
+        if (check && playerToEvaluate == lastPlayedPlayer) attackPotential = actionValues["check"] * attackPotential;
+        return evaluationCoefficients["attackPotential"] * attackPotential;
+    }
+
+    private int CheckNumberOfPassedPawns(Piece.PieceColor playerToEvaluate)
+    {
+        Piece.PieceColor opponentColor = playerToEvaluate == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;  
+        int passedPawnCount = 0;
+        int lowerBoardBound = 0, upperBoardBound = 8;
+        int increment = playerToEvaluate == Piece.PieceColor.White ? 1 : -1;
+
+        uint lowestId = playerToEvaluate == Piece.PieceColor.White ? (uint)0 : (uint)16;
+        uint highestId = lowestId + 16;
+        for(uint i = lowestId; i < highestId; i++) {
+            Point pos = idToPos[i];
+            if(pos != new Point(-1, -1) && board[pos.X, pos.Y].GetComponent<Piece>().type == Piece.PieceType.Pawn)
+            {
+                int checkPosX = pos.X, checkPosY = pos.Y + increment;
+                bool passedPawn = true;
+                for(int m = -1; m <= 1; m++)
+                {
+                    if (pos.X + m < lowerBoardBound || pos.X + m >= upperBoardBound)
+                        continue;
+                    checkPosX = pos.X + m;
+                    while (checkPosY >= lowerBoardBound && checkPosY < upperBoardBound)
+                    {
+                        if (board[checkPosX, checkPosY] != null && board[checkPosX, checkPosY].GetComponent<Piece>().player == opponentColor &&  board[checkPosX, checkPosY].GetComponent<Piece>().type == Piece.PieceType.Pawn)
+                        {
+                            passedPawn = false;
+                            break;
+                        }
+                        checkPosY += increment;
+                    }
+                }
+
+                if(passedPawn)
+                    passedPawnCount++;
+            }
+        }
+
+        return passedPawnCount;
+    }
+
+    private float EvaluatePieceMobilityOfAPlayer(bool check, Piece.PieceColor playerToEvaluate)
+    {
+        return evaluationCoefficients["pieceMobility"] * moveGenerator.GetMoves(playerToEvaluate).Count;
     }
 
     private int TotalPieceValueCount()
@@ -214,9 +298,9 @@ public class AIPlayer : MonoBehaviour
         return 39;
     }
 
-    private float PieceConnectedness(Piece.PieceColor currPlayer)
+    private float EvaluatePieceConnectedness(Piece.PieceColor playerToEvaluate)
     {
-        uint lowestId = currPlayer == Piece.PieceColor.White ? (uint)0 : (uint)16;
+        uint lowestId = playerToEvaluate == Piece.PieceColor.White ? (uint)0 : (uint)16;
         uint highestId = lowestId + 16;
 
         HashSet<uint> connectedIds = new();
@@ -245,14 +329,14 @@ public class AIPlayer : MonoBehaviour
         return (1.0f * connectedIds.Count * connectionCount) / (count * count);
     }
 
-    private float KingSafety(bool check, Piece.PieceColor currPlayer)
+    private float EvaluateKingSafety(bool check, Piece.PieceColor playerToEvaluate)
     {
-        if (check && playersTurn == currPlayer)
+        if (check && lastPlayedPlayer == playerToEvaluate)
         {
             return 0.0f;
         }
         Dictionary<uint, uint> pins = moveGenerator.GetPins();
-        uint lowestId = currPlayer == Piece.PieceColor.White ? (uint)0 : (uint)16;
+        uint lowestId = playerToEvaluate == Piece.PieceColor.White ? (uint)0 : (uint)16;
         uint highestId = lowestId + 16;
         int pinCount = 0;
 
@@ -263,36 +347,40 @@ public class AIPlayer : MonoBehaviour
                 pinCount++;
             }
         }
-        
-        float valueNormalized = 1.0f * (pins.Count * actionValues["pinned"]) / (actionValues["maxAttackAmount"] * actionValues["pinned"]);
-        return (1.0f - valueNormalized);
-        //int closeAttacksCount = 0;
-        //uint kingId = currPlayer == "white" ? whiteKingId : blackKingId;
-        //Point kingPos = idToPos[kingId];
-        //for (int x = -1; x <= 1; x++)
-        //{
-        //    for (int y = -1; y <= 1; y++)
-        //    {
-        //        Point currentPos = new Point(kingPos.X + x, kingPos.Y + y);
-        //        if (currentPos == kingPos)
-        //            continue;
-        //        if (gameSetter.PositionOnBoard(currentPos.X, currentPos.Y))
-        //        {
-        //            foreach (MoveUpdater mu in moveBoard[currentPos.X, currentPos.Y])
-        //            {
-        //                if (mu.id >= lowestIdOpponent && mu.id < highestIdOpponent && mu.attackable == true)
-        //                {
-        //                    closeAttacksCount++;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+
+        uint lowestIdOpponent = playerToEvaluate == Piece.PieceColor.White ? (uint)16 : (uint)0;
+        uint highestIdOpponent = lowestId + 16;
+        int closeAttacksCount = 0;
+        uint kingId = playerToEvaluate == Piece.PieceColor.White ? whiteKingId : blackKingId;
+        Point kingPos = idToPos[kingId];
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                Point currentPos = new Point(kingPos.X + x, kingPos.Y + y);
+                if (currentPos == kingPos)
+                    continue;
+                if (gameSetter.PositionOnBoard(currentPos.X, currentPos.Y))
+                {
+                    foreach (MoveUpdater mu in moveBoard[currentPos.X, currentPos.Y])
+                    {
+                        if (mu.id >= lowestIdOpponent && mu.id < highestIdOpponent && mu.attackable == true)
+                        {
+                            closeAttacksCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        float valueNormalized = 1.0f * (pins.Count * actionValues["pinned"]) / (actionValues["maxAttackAmount"]);
+        valueNormalized += 1.0f * (closeAttacksCount * actionValues["attackCloseToKing"]) / (actionValues["maxAttackAmount"]);
+        return (1.0f - valueNormalized) * evaluationCoefficients["kingSafety"];
     }
 
-    private float PiecePointTotal(Piece.PieceColor currPlayer)
+    private float EvaluateMaterialBalanceOfAPlayer(Piece.PieceColor playerToEvaluate)
     {
-        uint lowestId = currPlayer == Piece.PieceColor.White ? (uint)0 : (uint)16;
+        uint lowestId = playerToEvaluate == Piece.PieceColor.White ? (uint)0 : (uint)16;
         uint highestId = lowestId + 16;
         int totalValue = 0;
 
@@ -303,7 +391,7 @@ public class AIPlayer : MonoBehaviour
             Point pos = idToPos[i];
             if (pos != new Point(-1, -1))
             {
-                totalValue += pieceValues[board[pos.X, pos.Y].GetComponent<Piece>().name];
+                totalValue += pieceValues[board[pos.X, pos.Y].GetComponent<Piece>().type];
             }
         }
         return 1.0f * totalValue;

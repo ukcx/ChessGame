@@ -313,7 +313,8 @@ public class GameSetter : MonoBehaviour
             {
                 aiTimer = 0f;
                 aiTimerOn = true;
-                aiPlayer.GetAIMove(playAsWhite ? Piece.PieceColor.Black : Piece.PieceColor.White, depthOfAI);
+                StartCoroutine(WaitForTimer());
+                //aiPlayer.GetAIMove(playAsWhite ? Piece.PieceColor.Black : Piece.PieceColor.White, depthOfAI);
             }
             else if (!isOpponentHuman && !aisTurn)
             {
@@ -351,7 +352,7 @@ public class GameSetter : MonoBehaviour
             {
                 gameOver = true;
                 gamePlayUIController.AddMoveToUI(currentPlayer == Piece.PieceColor.White ? "0-1" : "1-0", twoFoldMoveNumber, gameOver, moveNumber);
-                Debug.Log("Checkmated!!");
+                //Debug.Log("Checkmated!!");
                 gamePlayUIController.ActivateCheckText("CheckMate!!");// + currentPlayer == "white" ? "Black" : "White" + " is the winner.";
                 moveStack = new Stack<Move>();
                 moveLogStack = new Stack<string>();
@@ -360,7 +361,7 @@ public class GameSetter : MonoBehaviour
             {
                 gameOver = true;
                 gamePlayUIController.AddMoveToUI("1/2-1/2", twoFoldMoveNumber, gameOver, moveNumber);
-                Debug.Log("Drawn!!");
+                //Debug.Log("Drawn!!");
                 gamePlayUIController.ActivateCheckText("Draw!!");
                 moveStack = new Stack<Move>();
                 moveLogStack = new Stack<string>();
@@ -479,7 +480,7 @@ public class GameSetter : MonoBehaviour
 
     public void AIMove(Move move)
     {
-        Debug.Log("moving piece coords: " + aiMove.From.X + ", " + aiMove.From.Y);
+        //Debug.Log("moving piece coords: " + aiMove.From.X + ", " + aiMove.From.Y);
         if (aisTurn && !gameOver)
         {
             MakeMoveOnBoard(move);
@@ -491,14 +492,14 @@ public class GameSetter : MonoBehaviour
 
     IEnumerator WaitForTimer()
     {
-        Debug.Log("moveReady: " + moveReady);
+        //Debug.Log("moveReady: " + moveReady);
         if (aisTurn && !gameOver)
         {
             aiMove = aiPlayer.GetAIMove(playAsWhite ? Piece.PieceColor.Black : Piece.PieceColor.White, depthOfAI);
         }
         //yield return new WaitUntil(() => moveReady);
         yield return new WaitUntil(() => moveReady);
-        Debug.Log("moving piece coords: " + aiMove.From.X + ", " + aiMove.From.Y);
+        //Debug.Log("moving piece coords: " + aiMove.From.X + ", " + aiMove.From.Y);
         if (aisTurn && !gameOver)
         {
             MakeMoveOnBoard(aiMove);
@@ -750,7 +751,7 @@ public class GameSetter : MonoBehaviour
         //{
         //    moveCount += possibleMoves[id].Count;
         //}
-        //Debug.Log("moveCount: " + moveCount);
+        ////Debug.Log("moveCount: " + moveCount);
 
         string lastBoardLog = UpdateBoardLogs(!forwards);
         AssignCheckValues(lastBoardLog);
@@ -850,7 +851,7 @@ public class GameSetter : MonoBehaviour
         string enPassantLog = "";
         foreach(uint enPassant in enPassants)
             enPassantLog += enPassant.ToString();
-        return (enPassantLog) + (whiteShortCastleRight ? "WSC" : "") + (whiteLongCastleRight ? "WLC" : "" + "") + (blackShortCastleRight ? "BSC" : "") + (blackLongCastleRight ? "BLC" : "" + "");
+        return (enPassantLog) + (whiteShortCastleRight ? "WSC" : "") + (whiteLongCastleRight ? "WLC" : "") + (blackShortCastleRight ? "BSC" : "") + (blackLongCastleRight ? "BLC" : "");
     }
 
     private void AssignCastleRightValues(Move move, bool forwards = true)
