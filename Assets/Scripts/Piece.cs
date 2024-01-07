@@ -6,11 +6,29 @@ using UnityEditor.Experimental.GraphView;
 
 public class Piece : MonoBehaviour
 {
+    public enum PieceType
+    {
+        Pawn,
+        Knight,
+        Bishop,
+        Rook,
+        Queen,
+        King
+    }
+
+    public enum PieceColor
+    {
+        White,
+        Black
+    }
+
+    public PieceType type;
+    public PieceColor player;
     //References to objects in our Unity Scene
     public GameObject movePlate;
-    public GameSetter controller;
+    private GameSetter controller;
     public uint id;
-    private Vector3 board_pos;
+    private Vector3 boardPos;
 
     private bool isDragging = false;
     private Vector3 offset;
@@ -26,7 +44,6 @@ public class Piece : MonoBehaviour
     private int yBoard = -1;
 
     //Variable for keeping track of the player it belongs to "black" or "white"
-    public string player;
     private int moveCount = 0;
     private int lastMoveNumber = 0;
 
@@ -36,7 +53,7 @@ public class Piece : MonoBehaviour
 
     private void Awake()
     {
-        board_pos = GameObject.FindGameObjectWithTag("BoardBorder").transform.position;
+        boardPos = GameObject.FindGameObjectWithTag("BoardBorder").transform.position;
         playAsWhite = GameManager.instance.isWhiteSelected;
         controller = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameSetter>();
     }
@@ -49,18 +66,18 @@ public class Piece : MonoBehaviour
         //Choose correct sprite based on piece's name
         switch (this.name)
         {
-            case "black_queen": this.GetComponent<SpriteRenderer>().sprite = black_queen; player = "black"; break;
-            case "black_knight": this.GetComponent<SpriteRenderer>().sprite = black_knight; player = "black"; break;
-            case "black_bishop": this.GetComponent<SpriteRenderer>().sprite = black_bishop; player = "black"; break;
-            case "black_king": this.GetComponent<SpriteRenderer>().sprite = black_king; player = "black"; break;
-            case "black_rook": this.GetComponent<SpriteRenderer>().sprite = black_rook; player = "black"; break;
-            case "black_pawn": this.GetComponent<SpriteRenderer>().sprite = black_pawn; player = "black"; break;
-            case "white_queen": this.GetComponent<SpriteRenderer>().sprite = white_queen; player = "white"; break;
-            case "white_knight": this.GetComponent<SpriteRenderer>().sprite = white_knight; player = "white"; break;
-            case "white_bishop": this.GetComponent<SpriteRenderer>().sprite = white_bishop; player = "white"; break;
-            case "white_king": this.GetComponent<SpriteRenderer>().sprite = white_king; player = "white"; break;
-            case "white_rook": this.GetComponent<SpriteRenderer>().sprite = white_rook; player = "white"; break;
-            case "white_pawn": this.GetComponent<SpriteRenderer>().sprite = white_pawn; player = "white"; break;
+            case "black_queen": this.GetComponent<SpriteRenderer>().sprite = black_queen; player = PieceColor.Black; break;
+            case "black_knight": this.GetComponent<SpriteRenderer>().sprite = black_knight; player = PieceColor.Black; break;
+            case "black_bishop": this.GetComponent<SpriteRenderer>().sprite = black_bishop; player = PieceColor.Black; break;
+            case "black_king": this.GetComponent<SpriteRenderer>().sprite = black_king; player = PieceColor.Black; break;
+            case "black_rook": this.GetComponent<SpriteRenderer>().sprite = black_rook; player = PieceColor.Black; break;
+            case "black_pawn": this.GetComponent<SpriteRenderer>().sprite = black_pawn; player = PieceColor.Black; break;
+            case "white_queen": this.GetComponent<SpriteRenderer>().sprite = white_queen; player = PieceColor.White; break;
+            case "white_knight": this.GetComponent<SpriteRenderer>().sprite = white_knight; player = PieceColor.White; break;
+            case "white_bishop": this.GetComponent<SpriteRenderer>().sprite = white_bishop; player = PieceColor.White; break;
+            case "white_king": this.GetComponent<SpriteRenderer>().sprite = white_king; player = PieceColor.White; break;
+            case "white_rook": this.GetComponent<SpriteRenderer>().sprite = white_rook; player = PieceColor.White; break;
+            case "white_pawn": this.GetComponent<SpriteRenderer>().sprite = white_pawn; player = PieceColor.White; break;
         }
     }
 
@@ -185,8 +202,8 @@ public class Piece : MonoBehaviour
         x += -3.8543f;
         y += -3.8301f;
 
-        x += board_pos.x;
-        y += board_pos.y;
+        x += boardPos.x;
+        y += boardPos.y;
 
         //Set actual unity values
         GameObject mp = Instantiate(movePlate, new Vector3(x, y, -3.0f), Quaternion.identity);
@@ -215,8 +232,8 @@ public class Piece : MonoBehaviour
         x += -3.8543f;
         y += -3.8301f;
 
-        x += board_pos.x;
-        y += board_pos.y;
+        x += boardPos.x;
+        y += boardPos.y;
 
         //Set actual unity values
         this.transform.position = new Vector3(x, y, -1.0f);
@@ -252,7 +269,7 @@ public class Piece : MonoBehaviour
         yBoard = y;
     }
 
-    public string GetPlayer()
+    public PieceColor GetPlayer()
     {
         return player;
     }
@@ -271,25 +288,4 @@ public class Piece : MonoBehaviour
     {
         moveCount += incerement;
     }
-
-    //public void OnPointerDown(PointerEventData eventData)
-    //{
-    //    Debug.Log("Pointer down");
-    //}
-
-    //public void OnBeginDrag(PointerEventData eventData)
-    //{
-    //    Debug.Log("Begin drag");
-    //}
-
-    //public void OnEndDrag(PointerEventData eventData)
-    //{
-    //    Debug.Log("End drag");
-    //}
-
-    //public void OnDrag(PointerEventData eventData)
-    //{
-    //    pieceRect.anchoredPosition += eventData.delta;
-    //    Debug.Log("On drag");
-    //}
 }

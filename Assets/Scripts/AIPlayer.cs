@@ -5,7 +5,9 @@ using Unity.VisualScripting;
 
 public class AIPlayer : MonoBehaviour
 {
+    [SerializeField]
     private GameSetter gameSetter;
+    [SerializeField]
     private MoveGenerator moveGenerator;
     private Dictionary<uint, Point> idToPos;
     private GameObject[,] board;
@@ -15,15 +17,15 @@ public class AIPlayer : MonoBehaviour
 
     private uint whiteKingId;
     private uint blackKingId;
-    private string thisPlayer;
-    private string opponentPlayer;
+    private Piece.PieceColor thisPlayer;
+    private Piece.PieceColor opponentPlayer;
     private Move bestMove;
-    private string playersTurn;
+    private Piece.PieceColor playersTurn;
 
     private void Awake()
     {
-        gameSetter = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameSetter>();
-        moveGenerator = GameObject.FindGameObjectWithTag("MoveGenerator").GetComponent<MoveGenerator>();
+        //gameSetter = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameSetter>();
+        //moveGenerator = GameObject.FindGameObjectWithTag("MoveGenerator").GetComponent<MoveGenerator>();
         actionValues = new Dictionary<string, float>() { 
             { "checkmate", float.PositiveInfinity },{ "check", 2f }, { "draw", 0.0f }, { "pinned", 0.2f }, { "attackCloseToKing", 0.1f }, { "maxAttackAmount", 16f }
         };
@@ -53,13 +55,13 @@ public class AIPlayer : MonoBehaviour
         moveBoard = moveGenerator.GetMoveBoard();
     }
 
-    public Move GetAIMove(string player, int depth)
+    public Move GetAIMove(Piece.PieceColor player, int depth)
     {
         board = gameSetter.GetBoard();
         idToPos = gameSetter.idToPos;
         moveBoard = moveGenerator.GetMoveBoard();
         thisPlayer = player;
-        opponentPlayer = thisPlayer == "white" ? "black" : "white";
+        opponentPlayer = thisPlayer == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;
 
         float maxEval = Minimax(depth, float.NegativeInfinity, float.PositiveInfinity, 1);
         Debug.Log("max eval: " + maxEval);
@@ -145,7 +147,7 @@ public class AIPlayer : MonoBehaviour
 
     private float EvaluateBoard()
     {
-        playersTurn = gameSetter.GetCurrentPlayer() == "white" ? "black" : "white";
+        playersTurn = gameSetter.GetCurrentPlayer() == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;
         bool checkMate = gameSetter.checkMated;
         bool drawn = gameSetter.drawn;
 
@@ -170,15 +172,15 @@ public class AIPlayer : MonoBehaviour
         return EvaluateBoardOfOneSide(thisPlayer) - EvaluateBoardOfOneSide(opponentPlayer);
     }
 
-    private float EvaluateBoardOfOneSide(string currPlayer)
+    private float EvaluateBoardOfOneSide(Piece.PieceColor currPlayer)
     {
         bool check = gameSetter.check;
         return PiecePointTotal(currPlayer) + AttackingOpportunities(check, currPlayer) + PieceConnectedness(currPlayer) + KingSafety(check, currPlayer);
     }
 
-    private float AttackingOpportunities(bool check, string currPlayer)
+    private float AttackingOpportunities(bool check, Piece.PieceColor currPlayer)
     {
-        uint lowestIdOpponent = currPlayer == "white" ? (uint)16 : (uint)0;
+        uint lowestIdOpponent = currPlayer == Piece.PieceColor.White ? (uint)16 : (uint)0;
         uint highestIdOpponent = lowestIdOpponent + 16;
         int attackedPieceValues = 0;
         HashSet<uint> attackedPieces = new();
@@ -212,9 +214,9 @@ public class AIPlayer : MonoBehaviour
         return 39;
     }
 
-    private float PieceConnectedness(string currPlayer)
+    private float PieceConnectedness(Piece.PieceColor currPlayer)
     {
-        uint lowestId = currPlayer == "white" ? (uint)0 : (uint)16;
+        uint lowestId = currPlayer == Piece.PieceColor.White ? (uint)0 : (uint)16;
         uint highestId = lowestId + 16;
 
         HashSet<uint> connectedIds = new();
@@ -243,14 +245,14 @@ public class AIPlayer : MonoBehaviour
         return (1.0f * connectedIds.Count * connectionCount) / (count * count);
     }
 
-    private float KingSafety(bool check, string currPlayer)
+    private float KingSafety(bool check, Piece.PieceColor currPlayer)
     {
         if (check && playersTurn == currPlayer)
         {
             return 0.0f;
         }
         Dictionary<uint, uint> pins = moveGenerator.GetPins();
-        uint lowestId = currPlayer == "white" ? (uint)0 : (uint)16;
+        uint lowestId = currPlayer == Piece.PieceColor.White ? (uint)0 : (uint)16;
         uint highestId = lowestId + 16;
         int pinCount = 0;
 
@@ -288,9 +290,9 @@ public class AIPlayer : MonoBehaviour
         //}
     }
 
-    private float PiecePointTotal(string currPlayer)
+    private float PiecePointTotal(Piece.PieceColor currPlayer)
     {
-        uint lowestId = currPlayer == "white" ? (uint)0 : (uint)16;
+        uint lowestId = currPlayer == Piece.PieceColor.White ? (uint)0 : (uint)16;
         uint highestId = lowestId + 16;
         int totalValue = 0;
 

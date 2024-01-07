@@ -1446,6 +1446,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47243f9017de9b347b80bd9a75d69ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sounds: {fileID: 581672594}
+  check: {fileID: 1506403918}
+  capture: {fileID: 1999975742}
+  castle: {fileID: 1219042789}
+  promote: {fileID: 737160485}
+  move: {fileID: 1066834571}
 --- !u!1 &611296127
 GameObject:
   m_ObjectHideFlags: 0
@@ -2306,11 +2312,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   WHITE_KING_ID: 4
   BLACK_KING_ID: 20
+  moveReady: 0
   aiTimerOn: 0
   moveNumber: 0
-  gamePlayUIController: {fileID: 0}
-  moveGenerator: {fileID: 0}
-  audioController: {fileID: 0}
+  gamePlayUIController: {fileID: 1875321788}
+  moveGenerator: {fileID: 1896355895}
+  audioController: {fileID: 581672595}
+  aiPlayer: {fileID: 1617826815}
+  check: 0
+  checkMated: 0
+  drawn: 0
 --- !u!4 &868965479
 Transform:
   m_ObjectHideFlags: 0
@@ -4219,6 +4230,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0a2054b552c81a4aac59d55c76aab4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameSetter: {fileID: 868965478}
+  moveGenerator: {fileID: 1896355895}
 --- !u!4 &1617826816
 Transform:
   m_ObjectHideFlags: 0
@@ -4680,6 +4693,22 @@ MonoBehaviour:
   chesspiece: {fileID: 8153024036081287310, guid: 3d4dcc95c401c334a8a405ffa09e4ff3, type: 3}
   whiteBoardBorder: {fileID: -953457563, guid: 3b3ed55dfdf75984c8cc1af587f60de3, type: 3}
   blackBoardBorder: {fileID: 21300000, guid: 284d420a8976f754a8a897f858c0d30a, type: 3}
+  boardBorder: {fileID: 622009111}
+  rookButton: {fileID: 281983709}
+  queenButton: {fileID: 1422117317}
+  bishopButton: {fileID: 1704304072}
+  knightButton: {fileID: 515806262}
+  undoButton: {fileID: 1348332332}
+  restartButton: {fileID: 13549788}
+  exitButton: {fileID: 77849008}
+  moveHolder: {fileID: 1899085048}
+  checkText: {fileID: 1969058913}
+  gameoverPanel: {fileID: 312120727}
+  gameSetter: {fileID: 868965478}
+  timerTextWhite: {fileID: 1305648478}
+  timerTextBlack: {fileID: 851704557}
+  timerPanelWhite: {fileID: 893370848}
+  timerPanelBlack: {fileID: 1432295860}
 --- !u!1 &1896355893
 GameObject:
   m_ObjectHideFlags: 0
@@ -4724,6 +4753,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 607a633ef8865e44b84ac5deb8b071dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  game: {fileID: 868965478}
 --- !u!1 &1899085047
 GameObject:
   m_ObjectHideFlags: 0

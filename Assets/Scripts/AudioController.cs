@@ -4,22 +4,18 @@ using UnityEngine;
 
 public class AudioController : MonoBehaviour
 {
+    [SerializeField]
     private Transform sounds;
+    [SerializeField]
     private AudioSource check;
+    [SerializeField]
     private AudioSource capture;
+    [SerializeField]
     private AudioSource castle;
+    [SerializeField]
     private AudioSource promote;
+    [SerializeField]
     private AudioSource move;
-
-    private void Awake()
-    {
-        sounds = GameObject.Find("AudioController").transform;
-        check = sounds.Find("AudioSourceCheck").GetComponent<AudioSource>();
-        capture = sounds.Find("AudioSourceCapture").GetComponent<AudioSource>();
-        castle = sounds.Find("AudioSourceCastle").GetComponent<AudioSource>();
-        promote = sounds.Find("AudioSourcePromote").GetComponent<AudioSource>();
-        move = sounds.Find("AudioSourceMove").GetComponent<AudioSource>();
-    }
 
     public void PlaySound(Move _move, bool _check)
     {

@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
-using static UnityEngine.InputManagerEntry;
 
 public class MoveGenerator : MonoBehaviour
 {
+    [SerializeField]
     private GameSetter game;
     private Dictionary<uint, Point> idToPos;
     private GameObject[,] board;
@@ -14,7 +12,7 @@ public class MoveGenerator : MonoBehaviour
     private Queue<uint> whiteUpdatesQueue;
     private List<uint> enPassants;
     private Queue<uint> blackUpdatesQueue;
-    private string currentPlayer;
+    private Piece.PieceColor currentPlayer;
     private uint whiteKingId;
     private uint blackKingId;
 
@@ -39,9 +37,9 @@ public class MoveGenerator : MonoBehaviour
         return moveBoard;
     }
 
-    public Dictionary<uint, List<Move>> GetMoves(string player)
+    public Dictionary<uint, List<Move>> GetMoves(Piece.PieceColor player)
     {
-        return player == "white" ? legalWhiteMoves : legalBlackMoves;
+        return player == Piece.PieceColor.White ? legalWhiteMoves : legalBlackMoves;
     }
 
     public bool GetCheck()
@@ -68,7 +66,6 @@ public class MoveGenerator : MonoBehaviour
     }
     public void Initialize()
     {
-        game = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameSetter>();
         whiteKingId = game.WHITE_KING_ID;
         blackKingId = game.BLACK_KING_ID;
         legalWhiteMoves = new Dictionary<uint, List<Move>>();
@@ -112,13 +109,13 @@ public class MoveGenerator : MonoBehaviour
             {"white_queen", "Q" },  {"black_queen" , "Q" }, {"white_knight", "N" },  {"black_knight" , "N" }, {"white_king", "K" },  {"black_king" , "K" }};
     }
 
-    public void GenerateMoves(string player)
+    public void GenerateMoves(Piece.PieceColor player)
     {
         board = game.GetBoard();
         idToPos = game.GetPiecePositions();
         currentPlayer = player;
 
-        if (player == "white") legalWhiteMoves = new Dictionary<uint, List<Move>>();
+        if (player == Piece.PieceColor.White) legalWhiteMoves = new Dictionary<uint, List<Move>>();
         else legalBlackMoves = new Dictionary<uint, List<Move>>();
 
         //keep track of pieces in other way
@@ -126,7 +123,7 @@ public class MoveGenerator : MonoBehaviour
         //uint start_id = (uint)(currentPlayer.Equals("white") ? 0 : 16);
         //uint end_id = start_id + 16;
 
-        Queue<uint> updatesQueue = new Queue<uint>(currentPlayer == "white" ? whiteUpdatesQueue : blackUpdatesQueue);
+        Queue<uint> updatesQueue = new Queue<uint>(currentPlayer == Piece.PieceColor.White ? whiteUpdatesQueue : blackUpdatesQueue);
         Queue<uint> updatesQueue2 = new Queue<uint>();
 
         ////Debug.Log("currentPlayer: " + currentPlayer);
@@ -150,7 +147,7 @@ public class MoveGenerator : MonoBehaviour
             uint id = updatesQueue2.Dequeue();
             Point p = new Point(-1, -1);
 
-            if (currentPlayer == "white" && allWhiteMoves.ContainsKey(id)) allWhiteMoves.Remove(id);
+            if (currentPlayer == Piece.PieceColor.White && allWhiteMoves.ContainsKey(id)) allWhiteMoves.Remove(id);
             else if(allBlackMoves.ContainsKey(id)) allBlackMoves.Remove(id);
             if (idToPos[id] != p)
             {
@@ -158,9 +155,9 @@ public class MoveGenerator : MonoBehaviour
             }        
         }
 
-        if (currentPlayer == "white") whiteUpdatesQueue.Clear(); else blackUpdatesQueue.Clear();
+        if (currentPlayer == Piece.PieceColor.White) whiteUpdatesQueue.Clear(); else blackUpdatesQueue.Clear();
 
-        if (player == "white")DeepCopyMoves(ref allWhiteMoves, ref legalWhiteMoves);
+        if (player == Piece.PieceColor.White)DeepCopyMoves(ref allWhiteMoves, ref legalWhiteMoves);
         else DeepCopyMoves(ref allBlackMoves, ref legalBlackMoves);
 
         EliminateKingMoves();
@@ -180,7 +177,7 @@ public class MoveGenerator : MonoBehaviour
 
     private void RemoveEmptyMoves()
     {
-        if(currentPlayer == "white")
+        if(currentPlayer == Piece.PieceColor.White)
         {
             List<uint> keysToRemove = new List<uint>();
             foreach(KeyValuePair<uint, List<Move>> pair in legalWhiteMoves)
@@ -210,8 +207,8 @@ public class MoveGenerator : MonoBehaviour
 
     private void EliminateIllegalMoves()
     {
-        Dictionary<uint, List<Move>> movesAll = currentPlayer == "white" ? legalWhiteMoves : legalBlackMoves;
-        uint kingId = currentPlayer == "white" ? whiteKingId : blackKingId;
+        Dictionary<uint, List<Move>> movesAll = currentPlayer == Piece.PieceColor.White ? legalWhiteMoves : legalBlackMoves;
+        uint kingId = currentPlayer == Piece.PieceColor.White ? whiteKingId : blackKingId;
         uint attackingPieceId = 0;
 
         foreach (MoveUpdater mu in moveBoard[idToPos[kingId].X, idToPos[kingId].Y]) {
@@ -307,7 +304,7 @@ public class MoveGenerator : MonoBehaviour
         EliminateOtherMovesThanKingMove();
         if (movesToAdd.ContainsKey(kingId))
             movesToAdd.Remove(kingId);
-        if (currentPlayer == "white")
+        if (currentPlayer == Piece.PieceColor.White)
         {
             foreach (uint p in movesToAdd.Keys)
             {
@@ -325,8 +322,8 @@ public class MoveGenerator : MonoBehaviour
 
     private void EliminateOtherMovesThanKingMove()
     {
-        Dictionary<uint, List<Move>> movesAll = currentPlayer == "white" ? legalWhiteMoves : legalBlackMoves;
-        uint kingId = currentPlayer == "white" ? whiteKingId : blackKingId;
+        Dictionary<uint, List<Move>> movesAll = currentPlayer == Piece.PieceColor.White ? legalWhiteMoves : legalBlackMoves;
+        uint kingId = currentPlayer == Piece.PieceColor.White ? whiteKingId : blackKingId;
         Point posking = idToPos[kingId];
         Dictionary<uint, List<Move>> newMovesAll = new Dictionary<uint, List<Move>>();
         if (movesAll.ContainsKey(kingId))
@@ -334,7 +331,7 @@ public class MoveGenerator : MonoBehaviour
             newMovesAll.Add(kingId, movesAll[kingId]);
         }
 
-        if (currentPlayer == "white")
+        if (currentPlayer == Piece.PieceColor.White)
             DeepCopyMoves(ref newMovesAll, ref legalWhiteMoves);
         else
             DeepCopyMoves(ref newMovesAll, ref legalBlackMoves);
@@ -342,7 +339,7 @@ public class MoveGenerator : MonoBehaviour
 
     private void EliminatePinnedMoves()
     {
-        Dictionary<uint, List<Move>> movesAll = currentPlayer == "white" ? legalWhiteMoves : legalBlackMoves;
+        Dictionary<uint, List<Move>> movesAll = currentPlayer == Piece.PieceColor.White ? legalWhiteMoves : legalBlackMoves;
         foreach (KeyValuePair<uint,uint> pin in pins)
         {
             uint pinnedId = pin.Value;
@@ -386,9 +383,9 @@ public class MoveGenerator : MonoBehaviour
 
     private void EliminateKingMoves()
     {
-        uint kingId = currentPlayer == "white" ? whiteKingId : blackKingId;
+        uint kingId = currentPlayer == Piece.PieceColor.White ? whiteKingId : blackKingId;
         Point kingPos = idToPos[kingId];
-        Dictionary<uint, List<Move>> movesAll = currentPlayer == "white" ? legalWhiteMoves : legalBlackMoves;
+        Dictionary<uint, List<Move>> movesAll = currentPlayer == Piece.PieceColor.White ? legalWhiteMoves : legalBlackMoves;
         if (!movesAll.ContainsKey(kingId)) return;
         List<Move> moves = movesAll[kingId];
         if (moves.Count == 0) return;
@@ -530,7 +527,7 @@ public class MoveGenerator : MonoBehaviour
         bool isKingInRay = false;
         bool potentialPin = false;
         uint potentialPinId = 0;
-        uint kingId = currentPlayer == "white" ? blackKingId : whiteKingId;
+        uint kingId = currentPlayer == Piece.PieceColor.White ? blackKingId : whiteKingId;
 
         while (game.PositionOnBoard(x, y) && board[x, y] == null)
         {
@@ -634,7 +631,7 @@ public class MoveGenerator : MonoBehaviour
         int x = p.X;
         int y = p.Y;
 
-        if (currentPlayer == "white")
+        if (currentPlayer == Piece.PieceColor.White)
         {
             if (x == 4 && y == 0 && board[4, 0].GetComponent<Piece>().GetMoveCount() == 0)
             {
@@ -757,22 +754,22 @@ public class MoveGenerator : MonoBehaviour
         if (game.PositionOnBoard(x, y))
         {
             AddToMoveBoard(new Point(x, y), new MoveUpdater(board[p.X, p.Y].GetComponent<Piece>().id, false));
-            if (y == 5 && currentPlayer == "black" && game.PositionOnBoard(x, y - 1))
+            if (y == 5 && currentPlayer == Piece.PieceColor.Black && game.PositionOnBoard(x, y - 1))
                 AddToMoveBoard(new Point(x, y - 1), new MoveUpdater(board[p.X, p.Y].GetComponent<Piece>().id, false));
-            if (y == 2 && currentPlayer == "white" && game.PositionOnBoard(x, y + 1))
+            if (y == 2 && currentPlayer == Piece.PieceColor.White && game.PositionOnBoard(x, y + 1))
                 AddToMoveBoard(new Point(x, y + 1), new MoveUpdater(board[p.X, p.Y].GetComponent<Piece>().id, false));
             
             if (board[x, y] == null)
             {
                 if(y == 0 || y == 7)
                 {
-                    Move move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote(currentPlayer + "_queen") : null, null);
+                    Move move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_queen") : null, null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote(currentPlayer + "_rook") : null, null);
+                    move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_rook") : null, null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote(currentPlayer + "_bishop") : null, null);
+                    move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_bishop") : null, null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote(currentPlayer + "_knight") : null, null);
+                    move = new Move(p, new Point(x, y), board[p.X, p.Y].GetComponent<Piece>().name, null, null, y == 0 || y == 7 ? new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_knight") : null, null);
                     AddToPossibleMoves(currentPlayer, move);
                 }
                 else
@@ -784,12 +781,12 @@ public class MoveGenerator : MonoBehaviour
                 //
 
                 //double move
-                if (y == 5 && currentPlayer == "black" && game.PositionOnBoard(x, y - 1) && board[x, y - 1] == null)
+                if (y == 5 && currentPlayer == Piece.PieceColor.Black && game.PositionOnBoard(x, y - 1) && board[x, y - 1] == null)
                 {
                     Move move = new Move(p, new Point(x, y - 1), board[p.X, p.Y].GetComponent<Piece>().name, null, null, null, null);
                     AddToPossibleMoves(currentPlayer, move);
                 }
-                if (y == 2 && currentPlayer == "white" && game.PositionOnBoard(x, y + 1) && board[x, y + 1] == null)
+                if (y == 2 && currentPlayer == Piece.PieceColor.White && game.PositionOnBoard(x, y + 1) && board[x, y + 1] == null)
                 {
                     Move move = new Move(p, new Point(x, y + 1), board[p.X, p.Y].GetComponent<Piece>().name, null, null, null, null);
                     AddToPossibleMoves(currentPlayer, move);
@@ -797,25 +794,25 @@ public class MoveGenerator : MonoBehaviour
             }
 
             //move timing is not checked  // en passant
-            if (y == 2 && currentPlayer == "black" && game.PositionOnBoard(x - 1, y) && board[x - 1, y] == null && board[x - 1, y + 1] != null && board[x - 1, y + 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x - 1, y + 1].GetComponent<Piece>().name == "white_pawn" && board[x - 1, y + 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetTwoFoldMoveCount() - board[x - 1, y + 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
+            if (y == 2 && currentPlayer == Piece.PieceColor.Black && game.PositionOnBoard(x - 1, y) && board[x - 1, y] == null && board[x - 1, y + 1] != null && board[x - 1, y + 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x - 1, y + 1].GetComponent<Piece>().name == "white_pawn" && board[x - 1, y + 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetTwoFoldMoveCount() - board[x - 1, y + 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
             {
                 Move move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y + 1), board[x - 1, y + 1].GetComponent<Piece>().name, board[x - 1, y + 1].GetComponent<Piece>().id), null, null, null);
                 AddToPossibleMoves(currentPlayer, move);
                 enPassants.Add(board[p.X, p.Y].GetComponent<Piece>().id);
             }
-            if (y == 2 && currentPlayer == "black" && game.PositionOnBoard(x + 1, y) && board[x + 1, y] == null && board[x + 1, y + 1] != null && board[x + 1, y + 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x + 1, y + 1].GetComponent<Piece>().name == "white_pawn" && board[x + 1, y + 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetTwoFoldMoveCount() - board[x + 1, y + 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
+            if (y == 2 && currentPlayer == Piece.PieceColor.Black && game.PositionOnBoard(x + 1, y) && board[x + 1, y] == null && board[x + 1, y + 1] != null && board[x + 1, y + 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x + 1, y + 1].GetComponent<Piece>().name == "white_pawn" && board[x + 1, y + 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetTwoFoldMoveCount() - board[x + 1, y + 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
             {
                 Move move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y + 1), board[x + 1, y + 1].GetComponent<Piece>().name, board[x + 1, y + 1].GetComponent<Piece>().id), null, null, null);
                 AddToPossibleMoves(currentPlayer, move);
                 enPassants.Add(board[p.X, p.Y].GetComponent<Piece>().id);
             }
-            if (y == 5 && currentPlayer == "white" && game.PositionOnBoard(x - 1, y) && board[x - 1, y] == null && board[x - 1, y - 1] != null && board[x - 1, y - 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x - 1, y - 1].GetComponent<Piece>().name == "black_pawn" && board[x - 1, y - 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetTwoFoldMoveCount() - board[x - 1, y - 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
+            if (y == 5 && currentPlayer == Piece.PieceColor.White && game.PositionOnBoard(x - 1, y) && board[x - 1, y] == null && board[x - 1, y - 1] != null && board[x - 1, y - 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x - 1, y - 1].GetComponent<Piece>().name == "black_pawn" && board[x - 1, y - 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetTwoFoldMoveCount() - board[x - 1, y - 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
             {
                 Move move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y - 1), board[x - 1, y - 1].GetComponent<Piece>().name, board[x - 1, y - 1].GetComponent<Piece>().id), null, null, null);
                 AddToPossibleMoves(currentPlayer, move);
                 enPassants.Add(board[p.X, p.Y].GetComponent<Piece>().id);
             }
-            if (y == 5 && currentPlayer == "white" && game.PositionOnBoard(x + 1, y) && board[x + 1, y] == null && board[x + 1, y - 1] != null && board[x + 1, y - 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x + 1, y - 1].GetComponent<Piece>().name == "black_pawn" && board[x + 1, y - 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetComponent<GameSetter>().GetTwoFoldMoveCount() - board[x + 1, y - 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
+            if (y == 5 && currentPlayer == Piece.PieceColor.White && game.PositionOnBoard(x + 1, y) && board[x + 1, y] == null && board[x + 1, y - 1] != null && board[x + 1, y - 1].GetComponent<Piece>().GetPlayer() != currentPlayer && board[x + 1, y - 1].GetComponent<Piece>().name == "black_pawn" && board[x + 1, y - 1].GetComponent<Piece>().GetMoveCount() == 1 && game.GetComponent<GameSetter>().GetTwoFoldMoveCount() - board[x + 1, y - 1].GetComponent<Piece>().GetLastMoveNumber() <= 1)
             {
                 Move move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y - 1), board[x + 1, y - 1].GetComponent<Piece>().name, board[x + 1, y - 1].GetComponent<Piece>().id), null, null, null);
                 AddToPossibleMoves(currentPlayer, move);
@@ -843,13 +840,13 @@ public class MoveGenerator : MonoBehaviour
             {
                 if (y == 0 || y == 7)
                 {
-                    Move move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_queen"), null);
+                    Move move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_queen"), null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_queen"), null);
+                    move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_bishop"), null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_queen"), null);
+                    move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_knight"), null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_queen"), null);
+                    move = new Move(p, new Point(x + 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x + 1, y), board[x + 1, y].GetComponent<Piece>().name, board[x + 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_rook"), null);
                     AddToPossibleMoves(currentPlayer, move);
                 }
                 else
@@ -863,13 +860,13 @@ public class MoveGenerator : MonoBehaviour
             {
                 if (y == 0 || y == 7)
                 {
-                    Move move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_queen"), null);
+                    Move move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_queen"), null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_rook"), null);
+                    move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_rook"), null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_bishop"), null);
+                    move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_bishop"), null);
                     AddToPossibleMoves(currentPlayer, move);
-                    move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote(currentPlayer + "_knight"), null);
+                    move = new Move(p, new Point(x - 1, y), board[p.X, p.Y].GetComponent<Piece>().name, new Attack(new Point(x - 1, y), board[x - 1, y].GetComponent<Piece>().name, board[x - 1, y].GetComponent<Piece>().id), null, new Promote((currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_knight"), null);
                     AddToPossibleMoves(currentPlayer, move);
                 }
                 else
@@ -881,9 +878,9 @@ public class MoveGenerator : MonoBehaviour
         }
     }
 
-    private void AddToPossibleMoves(string player, Move move)
+    private void AddToPossibleMoves(Piece.PieceColor player, Move move)
     {
-        if (player == "white")
+        if (player == Piece.PieceColor.White)
             AddToWhiteMoves(move);
         else
             AddToBlackMoves(move);
@@ -951,8 +948,8 @@ public class MoveGenerator : MonoBehaviour
     {
         board = game.GetBoard();
         check = false;
-        uint kingIdOfPlayer = board[move.To.X, move.To.Y].GetComponent<Piece>().player == "white" ? whiteKingId : blackKingId;
-        uint kingIdOfOpponent = board[move.To.X, move.To.Y].GetComponent<Piece>().player == "white" ? blackKingId : whiteKingId;
+        uint kingIdOfPlayer = board[move.To.X, move.To.Y].GetComponent<Piece>().player == Piece.PieceColor.White ? whiteKingId : blackKingId;
+        uint kingIdOfOpponent = board[move.To.X, move.To.Y].GetComponent<Piece>().player == Piece.PieceColor.White ? blackKingId : whiteKingId;
 
         HashSet<uint> ids = new HashSet<uint>();
         if (move.Attack != null)
@@ -1053,14 +1050,14 @@ public class MoveGenerator : MonoBehaviour
         return enPassants;
     }
 
-    public void BackwardMoveUpdate(Move move, string player, bool isInitialPos = false)
+    public void BackwardMoveUpdate(Move move, Piece.PieceColor player, bool isInitialPos = false)
     {
         board = game.GetBoard();
-        currentPlayer = player == "white" ? "black" : "white";
+        currentPlayer = player == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White;
         if (isInitialPos)
         {
             Initialize();
-            GenerateMoves("white");
+            GenerateMoves(Piece.PieceColor.White);
             return;
         }
 
@@ -1070,7 +1067,7 @@ public class MoveGenerator : MonoBehaviour
             doublecheck = false;
         GameObject from = board[move.From.X, move.From.Y];
 
-        uint kingIdOfPlayer = player == "white" ?  blackKingId : whiteKingId;
+        uint kingIdOfPlayer = player == Piece.PieceColor.White ?  blackKingId : whiteKingId;
 
         HashSet<uint> ids = new HashSet<uint>();
         ids.Add(from.GetComponent<Piece>().id);
@@ -1103,7 +1100,7 @@ public class MoveGenerator : MonoBehaviour
 
         enPassants = new List<uint>();
 
-        GenerateMoves(player == "white" ? "black" : "white");
+        GenerateMoves(player == Piece.PieceColor.White ? Piece.PieceColor.Black : Piece.PieceColor.White);
 
         //block, capture, king run
         //king run, no block etc.

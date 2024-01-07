@@ -6,7 +6,7 @@ using UnityEngine;
 public class MovePlate : MonoBehaviour
 {
     //Some functions will need reference to the controller
-    public GameObject controller;
+    private GameObject controller;
 
     public Move assignedMove;
 
@@ -14,8 +14,8 @@ public class MovePlate : MonoBehaviour
     GameObject reference = null;
 
     //Location on the board
-    int matrixX;
-    int matrixY;
+    private int matrixX;
+    private int matrixY;
 
     //false: movement, true: attacking
     public bool attack = false;
@@ -37,11 +37,11 @@ public class MovePlate : MonoBehaviour
         {
             gameObject.GetComponent<SpriteRenderer>().color = new UnityEngine.Color(0.0f, 0.0f, 1.0f, 1.0f);
         }
+        controller = GameObject.FindGameObjectWithTag("GameController");
     }
 
     public void OnMouseUp()
     {
-        controller = GameObject.FindGameObjectWithTag("GameController");
         GameSetter sc = controller.GetComponent<GameSetter>();
         if (sc.IsGameOver())
         {
@@ -56,7 +56,6 @@ public class MovePlate : MonoBehaviour
 
     public void HandleDrop()
     {
-        controller = GameObject.FindGameObjectWithTag("GameController");
         GameSetter sc = controller.GetComponent<GameSetter>();
         if (sc.IsGameOver())
         {

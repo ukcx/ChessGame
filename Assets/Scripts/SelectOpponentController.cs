@@ -9,29 +9,25 @@ public class SelectOpponentController : MonoBehaviour
     private bool playAsWhite = false;
     private bool playAsBlack = false;
     private int playLength = 0;
+    [SerializeField]
     private GameObject aiButton;
+    [SerializeField]
     private GameObject humanButton;
+    [SerializeField]
     private GameObject whiteButton;
+    [SerializeField]
     private GameObject blackButton;
+    [SerializeField]
     private GameObject oneMinuteButton;
+    [SerializeField]
     private GameObject threeMinuteButton;
+    [SerializeField]
     private GameObject fiveMinuteButton;
+    [SerializeField]
     private GameObject tenMinuteButton;
+    [SerializeField]
     private GameObject playButton;
 
-
-    public void Awake()
-    {
-        aiButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("OpponentPanel").Find("AIButton").gameObject;
-        humanButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("OpponentPanel").Find("HumanButton").gameObject;
-        whiteButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ChooseSidePanel").Find("WhiteButton").gameObject;
-        blackButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ChooseSidePanel").Find("BlackButton").gameObject;
-        oneMinuteButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ChooseTimePanel").Find("OneMinuteButton").gameObject;
-        threeMinuteButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ChooseTimePanel").Find("ThreeMinuteButton").gameObject;
-        fiveMinuteButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ChooseTimePanel").Find("FiveMinuteButton").gameObject;
-        tenMinuteButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ChooseTimePanel").Find("TenMinuteButton").gameObject;
-        playButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("PlayButton").gameObject;
-    }
 
     public void SelectButton(GameObject buttonObject)
     {

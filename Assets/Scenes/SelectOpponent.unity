@@ -1447,6 +1447,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32ca4bcd1b38c32459c9feb988e143eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  aiButton: {fileID: 945634397}
+  humanButton: {fileID: 555349987}
+  whiteButton: {fileID: 1806705229}
+  blackButton: {fileID: 1496053937}
+  oneMinuteButton: {fileID: 2132987845}
+  threeMinuteButton: {fileID: 566849789}
+  fiveMinuteButton: {fileID: 1233261398}
+  tenMinuteButton: {fileID: 1385402815}
+  playButton: {fileID: 594829661}
 --- !u!1 &1116615420
 GameObject:
   m_ObjectHideFlags: 0

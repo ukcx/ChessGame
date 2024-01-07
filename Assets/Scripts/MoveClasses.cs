@@ -1,6 +1,4 @@
 
-using Unity.VisualScripting;
-
 public struct Point
 {
     public Point(int x, int y)

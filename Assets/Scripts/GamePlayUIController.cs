@@ -1,3 +1,4 @@
+using System;
 using UnityEditor.U2D.Path;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,51 +15,57 @@ public class GamePlayUIController : MonoBehaviour
     public delegate void ExitButtonClicked();
     public static event ExitButtonClicked ExitButtonIsClicked;
 
-    public GameObject movePanel;
-    public ScrollRect scrollRect;
-    public GameObject chesspiece;
-    public Sprite whiteBoardBorder, blackBoardBorder;
+    [SerializeField]
+    private GameObject movePanel;
+    [SerializeField]
+    private ScrollRect scrollRect;
+    [SerializeField]
+    private GameObject chesspiece;
+    [SerializeField]
+    private Sprite whiteBoardBorder, blackBoardBorder;
+    [SerializeField]
+    private GameObject boardBorder;
+    [SerializeField]
+    private GameObject rookButton;
+    [SerializeField]
+    private GameObject queenButton;
+    [SerializeField]
+    private GameObject bishopButton;
+    [SerializeField]
+    private GameObject knightButton;
+    [SerializeField]
     private GameObject undoButton;
+    [SerializeField]
     private GameObject restartButton;
+    [SerializeField]
     private GameObject exitButton;
+    [SerializeField]
     private Transform moveHolder;
+    [SerializeField]
     private GameObject checkText;
+    [SerializeField]
     private GameObject gameoverPanel;
+    [SerializeField]
     private GameSetter gameSetter;
+    [SerializeField]
+    private Transform timerTextWhite;
+    [SerializeField]
+    private Transform timerTextBlack;
+    [SerializeField]
+    private Transform timerPanelWhite;
+    [SerializeField]
+    private Transform timerPanelBlack;
 
     private float timeLimit = 0;
     private float timeElapsedWhite = 0;
     private float timeElapsedBlack = 0;
     private bool timerIsOn = false;
-    private Transform timerTextWhite;
-    private Transform timerTextBlack;
-    private Transform timerPanelWhite;
-    private Transform timerPanelBlack;
-
-    // Start is called before the first frame update
-    void Awake()
-    {
-        undoButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("UndoButton").gameObject;
-        restartButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("RestartGameButton").gameObject;
-        exitButton = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ExitGameButton").gameObject;
-        moveHolder = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("ScrollView").Find("Viewport").Find("Content");
-        checkText = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.Find("CheckText").gameObject;
-        gameoverPanel = GameObject.FindGameObjectWithTag("CanvasGameOver").transform.Find("GameOverPanel").gameObject;
-        
-        timerTextWhite = GameObject.FindWithTag("GamePlayUIParent").transform.Find("TimerWhite");
-        timerTextBlack = GameObject.FindWithTag("GamePlayUIParent").transform.Find("TimerBlack");
-        timerTextWhite.GetComponent<Text>().text = FormatTime(Mathf.Round(timeLimit)).ToString();
-        timerTextBlack.GetComponent<Text>().text = FormatTime(Mathf.Round(timeLimit)).ToString();
-        timerPanelWhite = GameObject.FindWithTag("GamePlayUIParent").transform.Find("PanelTimerWhite");
-        timerPanelBlack = GameObject.FindWithTag("GamePlayUIParent").transform.Find("PanelTimerBlack");
-        gameSetter = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameSetter>();
-    }
 
     private void Update()
     {
         if (timerIsOn)
         {
-            if (gameSetter.GetCurrentPlayer() == "white")
+            if (gameSetter.GetCurrentPlayer() == Piece.PieceColor.White)
             {
                 timerPanelWhite.gameObject.SetActive(true);
                 timerPanelBlack.gameObject.SetActive(false);
@@ -113,7 +120,7 @@ public class GamePlayUIController : MonoBehaviour
 
     public void Initialize(bool playAsWhite)
     {
-        GameObject.FindGameObjectWithTag("BoardBorder").gameObject.GetComponent<SpriteRenderer>().sprite = playAsWhite ? whiteBoardBorder : blackBoardBorder;
+        boardBorder.GetComponent<SpriteRenderer>().sprite = playAsWhite ? whiteBoardBorder : blackBoardBorder;
     }
 
     public GameObject[] CreateWholeChessBoardPieces()
@@ -140,7 +147,28 @@ public class GamePlayUIController : MonoBehaviour
         GameObject obj = Instantiate(chesspiece, new Vector3(0, 0, -1), Quaternion.identity);
         Piece cm = obj.GetComponent<Piece>(); //We have access to the GameObject, we need the script
         cm.name = pieceName; //This is a built in variable that Unity has, so we did not have to declare it before
-        cm.player = player;
+        cm.player = player == "white" ? Piece.PieceColor.White : Piece.PieceColor.Black;
+        switch (playerInfo[1])
+        {
+            case "knight":
+                cm.type = Piece.PieceType.Knight;
+                break;
+            case "bishop":
+                cm.type = Piece.PieceType.Bishop;
+                break;
+            case "rook":
+                cm.type = Piece.PieceType.Rook;
+                break;
+            case "queen":
+                cm.type = Piece.PieceType.Queen;
+                break;
+            case "king":
+                cm.type = Piece.PieceType.King;
+                break;
+            case "pawn":
+                cm.type = Piece.PieceType.Pawn;
+                break;
+        }
         cm.id = id;
         cm.SetXBoard(x);
         cm.SetYBoard(y);
@@ -180,22 +208,18 @@ public class GamePlayUIController : MonoBehaviour
 
     public void EnablePromotionButtons()
     {
-        Transform uiTrans = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform;
-
-        uiTrans.Find("KnightButton").gameObject.SetActive(true);
-        uiTrans.Find("BishopButton").gameObject.SetActive(true);
-        uiTrans.Find("RookButton").gameObject.SetActive(true);
-        uiTrans.Find("QueenButton").gameObject.SetActive(true);
+        knightButton.SetActive(true);
+        bishopButton.SetActive(true);
+        rookButton.SetActive(true);
+        queenButton.SetActive(true);
     }
 
     public void DisablePromotionButtons()
     {
-        Transform uiTrans = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform;
-
-        uiTrans.Find("KnightButton").gameObject.SetActive(false);
-        uiTrans.Find("BishopButton").gameObject.SetActive(false);
-        uiTrans.Find("RookButton").gameObject.SetActive(false);
-        uiTrans.Find("QueenButton").gameObject.SetActive(false);
+        knightButton.SetActive(false);
+        bishopButton.SetActive(false);
+        rookButton.SetActive(false);
+        queenButton.SetActive(false);
     }
 
     public void AddMoveToUI(string moveLog, int twoFoldMoveCount, bool gameOver, int moveNumber)

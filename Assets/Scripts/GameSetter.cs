@@ -35,18 +35,22 @@ public class GameSetter : MonoBehaviour
     private Dictionary<string, int> boardLogCounts = new Dictionary<string, int>();
 
     //current turn
-    private string currentPlayer = "white";
+    private Piece.PieceColor currentPlayer = Piece.PieceColor.White;
 
+    [SerializeField]
     private GamePlayUIController gamePlayUIController;
+    [SerializeField]
     private MoveGenerator moveGenerator;
+    [SerializeField]
     private AudioController audioController;
+    [SerializeField]
     private AIPlayer aiPlayer;
 
     private Point lastClickedPiecePos;
     private Move lastMove;
     private string lastMoveLog;
 
-    private int depthOfAI = 4;
+    private int depthOfAI = 3;
     
     private bool whiteShortCastleRight = true;
     private bool whiteLongCastleRight = true;
@@ -61,15 +65,8 @@ public class GameSetter : MonoBehaviour
     private bool playAsWhite = true;
     private float timeLimit = 0;
 
-    public delegate void AITimerStarted();
-    public static event AITimerStarted AITimerIsStarted;
-    public delegate void AITimerStopped();
-    public static event AITimerStopped AITimerIsStopped;
-
     //Game Ending
     private bool gameOver = false;
-    private bool restartGame = false;
-    private bool exit = false;
 
     private void OnEnable()
     {
@@ -94,10 +91,6 @@ public class GameSetter : MonoBehaviour
         isOpponentHuman = GameManager.instance.isOpponentHuman;
         playAsWhite = GameManager.instance.isWhiteSelected;
         timeLimit = GameManager.instance.playTimeAmount;
-        audioController = GameObject.Find("AudioController").transform.GetComponent<AudioController>();
-        gamePlayUIController = GameObject.FindGameObjectWithTag("GamePlayUIParent").transform.GetComponent<GamePlayUIController>();
-        aiPlayer = GameObject.Find("AIPlayer").transform.GetComponent<AIPlayer>();
-        moveGenerator = GameObject.FindGameObjectWithTag("MoveGenerator").GetComponent<MoveGenerator>();
 
         gamePlayUIController.Initialize(playAsWhite);
         allPieces = gamePlayUIController.CreateWholeChessBoardPieces();
@@ -244,16 +237,16 @@ public class GameSetter : MonoBehaviour
         switch (index)
         {
             case 0:
-                promotingTo = currentPlayer + "_knight";
+                promotingTo = (currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_knight";
                 break;
             case 1:
-                promotingTo = currentPlayer + "_bishop";
+                promotingTo = (currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_bishop";
                 break;
             case 2:
-                promotingTo = currentPlayer + "_rook";
+                promotingTo = (currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_rook";
                 break;
             case 3:
-                promotingTo = currentPlayer + "_queen";
+                promotingTo = (currentPlayer == Piece.PieceColor.White ? "white" : "black") + "_queen";
                 break;
         }
         promotionInProcess = false;
@@ -292,13 +285,13 @@ public class GameSetter : MonoBehaviour
 
     public void ChangePlayer()
     {
-        if (currentPlayer == "white")
+        if (currentPlayer == Piece.PieceColor.White)
         {
-            currentPlayer = "black";
+            currentPlayer = Piece.PieceColor.Black;
         }
         else
         {
-            currentPlayer = "white";
+            currentPlayer = Piece.PieceColor.White;
         }
     }
 
@@ -312,7 +305,7 @@ public class GameSetter : MonoBehaviour
             PlaySound(lastMove);
         }
         UpdateMoveLog(movedBackwards);
-        aisTurn = !isOpponentHuman && (playAsWhite ? currentPlayer == "black" : currentPlayer == "white");
+        aisTurn = !isOpponentHuman && (playAsWhite ? currentPlayer == Piece.PieceColor.Black : currentPlayer == Piece.PieceColor.White);
 
         if (!movedBackwards)
         {
@@ -320,7 +313,7 @@ public class GameSetter : MonoBehaviour
             {
                 aiTimer = 0f;
                 aiTimerOn = true;
-                aiPlayer.GetAIMove(playAsWhite ? "black" : "white", depthOfAI);
+                aiPlayer.GetAIMove(playAsWhite ? Piece.PieceColor.Black : Piece.PieceColor.White, depthOfAI);
             }
             else if (!isOpponentHuman && !aisTurn)
             {
@@ -342,7 +335,7 @@ public class GameSetter : MonoBehaviour
     {
         if (gameOver)
         {
-            gamePlayUIController.AddMoveToUI(currentPlayer == "white" ? "0-1" : "1-0", twoFoldMoveNumber, gameOver, moveNumber);
+            gamePlayUIController.AddMoveToUI(currentPlayer == Piece.PieceColor.White ? "0-1" : "1-0", twoFoldMoveNumber, gameOver, moveNumber);
             moveLogStack = new Stack<string>();
             return;
         }
@@ -357,7 +350,7 @@ public class GameSetter : MonoBehaviour
             if (checkMated)
             {
                 gameOver = true;
-                gamePlayUIController.AddMoveToUI(currentPlayer == "white" ? "0-1" : "1-0", twoFoldMoveNumber, gameOver, moveNumber);
+                gamePlayUIController.AddMoveToUI(currentPlayer == Piece.PieceColor.White ? "0-1" : "1-0", twoFoldMoveNumber, gameOver, moveNumber);
                 Debug.Log("Checkmated!!");
                 gamePlayUIController.ActivateCheckText("CheckMate!!");// + currentPlayer == "white" ? "Black" : "White" + " is the winner.";
                 moveStack = new Stack<Move>();
@@ -409,15 +402,12 @@ public class GameSetter : MonoBehaviour
         gameOver = false;
         //Using UnityEngine.SceneManagement is needed here
         SceneManager.LoadScene("GamePlay"); //Restarts the game by loading the scene over again
-        restartGame = false;
     }
 
     public void ExitGame()
     {
-        exit = true;
         gameOver = false;
         SceneManager.LoadScene("MainMenu"); //Exits the game by loading the scene over again
-        restartGame = false;
     }
 
     public void SetPosition(GameObject obj)
@@ -446,7 +436,7 @@ public class GameSetter : MonoBehaviour
         if (x < 0 || y < 0 || x >= positions.GetLength(0) || y >= positions.GetLength(1)) return false;
         return true;
     }
-    public string GetCurrentPlayer()
+    public Piece.PieceColor GetCurrentPlayer()
     {
         return currentPlayer;
     }
@@ -504,7 +494,7 @@ public class GameSetter : MonoBehaviour
         Debug.Log("moveReady: " + moveReady);
         if (aisTurn && !gameOver)
         {
-            aiMove = aiPlayer.GetAIMove(playAsWhite ? "black" : "white", depthOfAI);
+            aiMove = aiPlayer.GetAIMove(playAsWhite ? Piece.PieceColor.Black : Piece.PieceColor.White, depthOfAI);
         }
         //yield return new WaitUntil(() => moveReady);
         yield return new WaitUntil(() => moveReady);
@@ -528,7 +518,7 @@ public class GameSetter : MonoBehaviour
                 drawn = true; //stalemate
         }
         if (checkMated)
-            winner = currentPlayer == "white" ? "black" : "white";
+            winner = currentPlayer == Piece.PieceColor.White ? "black" : "white";
         else
         {
             if (boardLogCounts.ContainsKey(lastBoardLog) && boardLogCounts[lastBoardLog] >= 3)
@@ -666,7 +656,7 @@ public class GameSetter : MonoBehaviour
 
         if (m.Promote != null)
         {
-            unMovingPiece.GetComponent<Piece>().name = unMovingPiece.GetComponent<Piece>().GetPlayer() + "_pawn";
+            unMovingPiece.GetComponent<Piece>().name = (unMovingPiece.GetComponent<Piece>().GetPlayer() == Piece.PieceColor.White ? "white" : "black") + "_pawn";
         }
 
         if (m.Attack != null)
